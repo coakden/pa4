@@ -1,0 +1,23 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1519869226660.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "945BB684",
+    "lastKnownWriteTime" : 1519869821,
+    "last_content_update" : 1519869821484,
+    "path" : "~/Desktop/pa4/slides/writeup.Rmd",
+    "project_path" : "slides/writeup.Rmd",
+    "properties" : {
+        "cursorPosition" : "4,20",
+        "scrollLine" : "0",
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Programming Assignment 4</title>
+    <meta charset="utf-8">
+    <meta name="author" content="Chris Oakden" />
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <link href="libs/remark-css/default-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Programming Assignment 4
+### Chris Oakden
+### Due: 03/06/2018
+
+---
+
+
+
+
+#Intro
+--
+
+- Dataset containing fricatives, center of gravity, skewness
+
+--
+
+- Tidy data, EDA, model fitting, interpret results
+
+--
+
+- Let's go!
+
+---
+
+#Load and Check
+--
+
+- Load the dataset as well as necessary libraries
+
+```r
+library(tidyverse)
+library(ggfortify)
+fricdat &lt;- read_csv("../data_raw/fricatives.csv")
+```
+
+--
+
+- Check the structure of the dataset
+
+```r
+glimpse(fricdat)
+```
+
+```
+## Observations: 20
+## Variables: 5
+## $ obs         &lt;int&gt; 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,...
+## $ s_cog       &lt;dbl&gt; 3285.300, 4664.371, 4679.532, 4873.546, 4878.759, ...
+## $ s_skewness  &lt;dbl&gt; -1.2152771, -1.1854471, -1.0676233, -1.0610645, -1...
+## $ sh_cog      &lt;dbl&gt; 2408.519, 2823.398, 2898.352, 3617.480, 3668.004, ...
+## $ sh_skewness &lt;dbl&gt; -0.24808262, -0.01652603, 0.11767899, 0.19782525, ...
+```
+
+---
+#Tidy the Data
+--
+
+- Collapse x_cog and x_skew; create a "phoneme" column
+
+
+--
+
+
+```r
+tidy_fric &lt;- fricdat %&gt;%
+  gather(., meas, val, -obs) %&gt;%
+  separate(., meas, into = c("phoneme", "meas"), 
+           sep = "_", remove = T) %&gt;%
+  spread(., meas, val)
+head(tidy_fric)
+```
+
+```
+## # A tibble: 6 x 4
+##     obs phoneme      cog    skewness
+##   &lt;int&gt;   &lt;chr&gt;    &lt;dbl&gt;       &lt;dbl&gt;
+## 1     1       s 3285.300 -1.21527708
+## 2     1      sh 2408.519 -0.24808262
+## 3     2       s 4664.371 -1.18544712
+## 4     2      sh 2823.398 -0.01652603
+## 5     3       s 4679.532 -1.06762330
+## 6     3      sh 2898.352  0.11767899
+```
+
+---
+
+#Descriptive Statistics
+
+--
+
+- Mean and sd values for center of gravity and skewness, separated by phoneme
+
+--
+
+- Use the `summarize()` function
+
+--
+
+
+```r
+tidy_fric %&gt;%
+  group_by(., phoneme) %&gt;%
+  summarize(., mean_cog = mean(cog), sd_cog = sd(cog),
+            mean_skew = mean(skewness), sd_skew = sd(skewness))
+```
+
+```
+## # A tibble: 2 x 5
+##   phoneme mean_cog   sd_cog  mean_skew   sd_skew
+##     &lt;chr&gt;    &lt;dbl&gt;    &lt;dbl&gt;      &lt;dbl&gt;     &lt;dbl&gt;
+## 1       s 5690.524 913.2537 -0.7714211 0.2834032
+## 2      sh 3994.823 697.0922  0.5527295 0.4411120
+```
+
+---
+#Boxplot: COG ~ Phoneme
+&lt;img src="index_files/figure-html/plot1-1.png" width="504" style="display: block; margin: auto;" /&gt;
+
+---
+#Stat Summary: Skewness ~ Phoneme
+&lt;img src="index_files/figure-html/plot2-1.png" width="504" style="display: block; margin: auto;" /&gt;
+
+---
+#Model Fit
+
+--
+
+- Transform data; filter out [sh] phoneme figures so that only [s] remains
+
+
+```r
+tidy_s &lt;- tidy_fric %&gt;%
+  filter(., phoneme == "s")
+```
+
+--
+
+-  Fit a linear model; examine COG as a function of skewness
+
+```r
+scsmod &lt;- lm(cog ~ skewness, data = tidy_s)
+```
+
+--
+
+- Summarize model using `broom::tidy`
+
+```r
+broom::tidy(scsmod)
+```
+
+```
+##          term estimate std.error statistic      p.value
+## 1 (Intercept) 8027.238  212.3339  37.80479 1.328644e-18
+## 2    skewness 3029.103  259.1380  11.68915 7.690958e-10
+```
+
+---
+#Model Fit, cont'd
+--
+
+- Alternatively, use `summary()` to summarize model
+
+```
+## 
+## Call:
+## lm(formula = cog ~ skewness, data = tidy_s)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -1060.74   -21.72    58.96   123.00   405.24 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)   8027.2      212.3   37.80  &lt; 2e-16 ***
+## skewness      3029.1      259.1   11.69 7.69e-10 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 320.1 on 18 degrees of freedom
+## Multiple R-squared:  0.8836,	Adjusted R-squared:  0.8771 
+## F-statistic: 136.6 on 1 and 18 DF,  p-value: 7.691e-10
+```
+
+---
+#Scatterplot: COG ~ Skewness
+&lt;img src="index_files/figure-html/plot3-1.png" width="504" style="display: block; margin: auto;" /&gt;
+
+---
+#Model Diagnostics: General
+--
+
+- Mean of residuals is 0 (so far so good)
+
+```r
+summary(scsmod$residuals)
+```
+
+```
+##     Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+## -1060.74   -21.72    58.96     0.00   123.00   405.24
+```
+
+--
+
+- No autocorrelation (use `acf()`; next slide)
+
+--
+
+- Homoskedasticity, normality skewed by influenctial data points (use `ggfortify::autoplot()` for plots): 1, 10, 20
+
+---
+#Model Diag: Autocorrelation
+&lt;img src="index_files/figure-html/autocorrelation-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+#Model Diag: Residual Homoskedasticity
+&lt;img src="index_files/figure-html/homosk-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+#Model Diag: Residual Normality
+&lt;img src="index_files/figure-html/norm-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+#Writeup
+The writeup is [here](https://www.youtube.com/watch?v=oHg5SJYRHA0)
+
+---
+#Writeup
+Just kidding, it's [here](https://coakden.github.io/pa3)
+    </textarea>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function() {
+  var d = document, s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})();</script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+  }
+});
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

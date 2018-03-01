@@ -1,0 +1,189 @@
+---
+title: "Programming Assignment 4"
+author: "Chris Oakden"
+date: "Due: 03/06/2018"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+```
+
+#Intro
+--
+
+- Dataset containing fricatives, center of gravity, skewness
+
+--
+
+- Tidy data, EDA, model fitting, interpret results
+
+--
+
+- Let's go!
+
+---
+
+#Load and Check
+--
+
+- Load the dataset as well as necessary libraries
+```{r, loading, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(ggfortify)
+fricdat <- read_csv("../data_raw/fricatives.csv")
+```
+
+--
+
+- Check the structure of the dataset
+```{r, check}
+glimpse(fricdat)
+```
+
+---
+#Tidy the Data
+--
+
+- Collapse x_cog and x_skew; create a "phoneme" column
+
+
+--
+
+```{r, tidy_data}
+tidy_fric <- fricdat %>%
+  gather(., meas, val, -obs) %>%
+  separate(., meas, into = c("phoneme", "meas"), 
+           sep = "_", remove = T) %>%
+  spread(., meas, val)
+head(tidy_fric)
+```
+
+---
+
+#Descriptive Statistics
+
+--
+
+- Mean and sd values for center of gravity and skewness, separated by phoneme
+
+--
+
+- Use the `summarize()` function
+
+--
+
+```{r, statsum}
+tidy_fric %>%
+  group_by(., phoneme) %>%
+  summarize(., mean_cog = mean(cog), sd_cog = sd(cog),
+            mean_skew = mean(skewness), sd_skew = sd(skewness))
+```
+
+---
+#Boxplot: COG ~ Phoneme
+```{r, plot1, echo=F, fig.retina=2, fig.align="center"}
+tidy_fric %>%
+  ggplot(aes(phoneme, cog))+
+           geom_boxplot()
+```
+
+---
+#Stat Summary: Skewness ~ Phoneme
+```{r, plot2, echo=F, fig.retina=2, fig.align="center"}
+tidy_fric %>%
+  ggplot(aes(phoneme, skewness))+
+  stat_summary(fun.data = mean_cl_boot)
+```
+
+---
+#Model Fit
+
+--
+
+- Transform data; filter out [sh] phoneme figures so that only [s] remains
+
+```{r, filter}
+tidy_s <- tidy_fric %>%
+  filter(., phoneme == "s")
+```
+
+--
+
+-  Fit a linear model; examine COG as a function of skewness
+```{r, model}
+scsmod <- lm(cog ~ skewness, data = tidy_s)
+```
+
+--
+
+- Summarize model using `broom::tidy`
+```{r, summary1}
+broom::tidy(scsmod)
+```
+
+---
+#Model Fit, cont'd
+--
+
+- Alternatively, use `summary()` to summarize model
+```{r, summary2, echo=F}
+summary(scsmod)
+```
+
+---
+#Scatterplot: COG ~ Skewness
+```{r, plot3, echo=F, fig.retina=2, fig.align="center"}
+ggplot(tidy_s, aes(skewness, cog))+
+  geom_point()+
+  geom_smooth(method=lm)
+```
+
+---
+#Model Diagnostics: General
+--
+
+- Mean of residuals is 0 (so far so good)
+```{r, residuals}
+summary(scsmod$residuals)
+```
+
+--
+
+- No autocorrelation (use `acf()`; next slide)
+
+--
+
+- Homoskedasticity, normality skewed by influenctial data points (use `ggfortify::autoplot()` for plots): 1, 10, 20
+
+---
+#Model Diag: Autocorrelation
+```{r, autocorrelation, echo=F, fig.align="center"}
+acf(scsmod$residuals)
+```
+
+---
+#Model Diag: Residual Homoskedasticity
+```{r, homosk, echo=F, fig.width= 10,fig.align='center'}
+autoplot(scsmod, which = c(1,3))
+```
+
+---
+#Model Diag: Residual Normality
+```{r, norm, echo=F, fig.align='center'}
+autoplot(scsmod, which = 2)
+```
+
+---
+#Writeup
+The writeup is [here](https://www.youtube.com/watch?v=oHg5SJYRHA0)
+
+---
+#Writeup
+Just kidding, it's [here](https://coakden.github.io/pa3)
