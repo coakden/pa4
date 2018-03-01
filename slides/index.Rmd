@@ -182,8 +182,4 @@ autoplot(scsmod, which = 2)
 
 ---
 #Writeup
-The writeup is [here](https://www.youtube.com/watch?v=oHg5SJYRHA0)
-
----
-#Writeup
-Just kidding, it's [here](https://coakden.github.io/pa3)
+The writeup is either [here](https://coakden.github.io/pa4/writeup/) or [here](https://www.youtube.com/watch?v=oHg5SJYRHA0)

@@ -1,0 +1,100 @@
+---
+title: "Programming Assignment 3"
+author: "Chris Oakden"
+date: "Last Updated: `r Sys.Date()`"
+output: 
+  html_document: 
+    highlight: textmate
+    theme: yeti
+    toc: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##Intro
+The purpose of this programming assignment is to work with a publicly available dataset, make sure that it is tidy, perform exploratory data analysis, and perform a bivariate regression on two continuous variables. Each task for the assignment is split into an independent section, but first, let's load the requisite libraries, `languageR` and  `tidyverse`.
+
+```{r, my_setup, echo=TRUE, message=FALSE}
+#loading the libraries is the first step
+library(languageR)
+library(tidyverse)
+```
+
+##Loading the Dataset
+We are going to load the dataset `ratings` from the package `languageR` and take a look at its structure. What variables does it have?
+```{r, my_load}
+#look at the structure of the dataset using the str() function
+str(ratings)
+```
+It looks like there are a number of continuous variables in this dataset we can work with. 
+
+##Tidying the Dataset
+The dataset appears to be as tidy as we can get it. We don't have access to responses from individual experiment subjects (only averages), but there is other relevant information about single words (frequency, size, etc.) that would not be conducive to that type of setup.  
+We can, however, think about our dataset in terms of the three rules of tidy data.  
+* *Each variable is a column?* Yes, there is a distinct attribute measurement in each column.  
+* *Each observation has its own row?* Yes, in this case, each of the 81 words is an observation since it contains all the values measured on the same unit across different variables.  
+* *Each value is a cell?* Yes, with distinct observations in each row and distinct variables in each column, every cell represents a value.  
+Therefore, the dataset does not require further tidying.
+
+##Descriptive Statistics
+Before looking at bivariate regression, it is important to get an idea of some of the basic facts about the data. I'm interested in the average length of the words, so I can find the mean word length and standard deviation and summarize those values in a table using `summarize()`.
+```{r, desc1}
+#find the mean and standard deviation of word length from the dataset using mean(), sd() and the tidyverse function summarize()
+ratings %>%
+  summarize(., mean = mean(Length), sd = sd(Length))
+```
+Words are on average about six letters in length. I can also plot a histogram to see how many words of each length are included in the dataset.
+```{r, desc2, fig.align="center"}
+#make a histogram of the word counts by length of word using ggplot
+ggplot(ratings, aes(x = Length))+
+  geom_histogram(binwidth = 1)
+```
+Another way to do that is just to group by the `$Length` variable and use the `n()` function inside `summarize()` to calculate the number and make a table of the output.
+```{r, desc3}
+#calculate number of words with a particular length using group_by and n()
+ratings %>%
+  group_by(., Length) %>%
+  summarize(., num = n())
+```
+Another variable of interest is `$meanFamiliarity`. The documentation for the dataset says that this variable is a subjective measure of relative frequency, averaged over subjects. However, it is not clear what the spread of these values is. It would be a good idea to collect some data on these values and summarize them in a table. Let's include the minimum and maximum values, the mean, and the standard deviation.
+```{r, desc4}
+#determine minimum, maximum, mean, and standard deviation of the subjective frequency estimate variable meanFamiliarity
+ratings %>%
+  summarize(., max = max(meanFamiliarity), min = min(meanFamiliarity),
+            mean = mean(meanFamiliarity), sd = sd(meanFamiliarity))
+```
+
+##Bivariate Regression on Data
+For the bivariate regression, let us explore the question of whether there is a correlation between subjective frequency (on the part of the test subjects) and actual frequency. We can create a model using the `lm()` function, setting `$meanFamiliarity` as the response variable and `$Frequency` as the predictor variable. Additionally, we can summarize the results using `summary()`.
+```{r, my_model}
+#generate a linear model for meanFamiliarity as a function of Frequency using the lm() function, then get a summary of the results using summary()
+my_model <- lm(meanFamiliarity ~ Frequency, data = ratings)
+summary(my_model)
+```
+We will discuss the results of this model in the section "General Observations".
+
+##Plot with Regression Line
+We can plot a regression line for this model by making a scatterplot, and plotting a regression line using the `geom_smooth()` function, specifying the method as `lm`
+```{r, my_plot, fig.align="center"}
+#plot the two variables with ggplot; first, make a scatterplot using geom_point(), then fit a regression line using geom_smooth(), and specifying "lm" as the method. include labels using labs()
+ratings %>%
+  ggplot(., aes(x = Frequency, y = meanFamiliarity))+
+  geom_point() +
+  geom_smooth(method = lm) +
+  labs(x = "Frequency", y = "Subjective Familiarity", title = "Regression Line Fitted to Two Variables: Frequency and Subjective Familiarity")
+```
+
+##General Observations
+The linear model and the regression line indicate a positive correlation between the subjective familiarity frequency measure and actual frequency. Specifically, the results indicate that a single unit increase in actual frequency correlates with roughly a 0.39 increase in mean subjective familiarity among the participants. The p-value associated with the Frequency variable shows significant effects (p < 0.001). The R-squared value, however, was rather low, at approximately 0.22, suggesting that other factors impacted the mean subjective familiarity figures.  
+We can also examine the structure of our residuals to check for homoscedasticity and normal distribution. For the first, we check the residuals using `plot()`. It should look like a blob; if the residuals are skewed, we know there is something we have not accounted for. Additionally, we should see a (fairly) straight line after plotting the residuals using `qqnorm()`. We can also plot a line through it using `qqline()`, as shown below.
+```{r, my_residuals, fig.align = "center"}
+#check the residuals for homoscedasticity using the plot() function... 
+plot(fitted(my_model), residuals(my_model))
+#...as well as qqnorm() and qqline() to check for normal distribution of residuals
+qqnorm(residuals(my_model))
+qqline(residuals(my_model))
+
+```
+Everything looks fairly normal, and so we can have some confidence in our results.
