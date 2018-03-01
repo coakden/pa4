@@ -1,15 +1,15 @@
 #load the tidyverse and the dataset
 library(tidyverse)
 library(ggfortify)
-fric <- read_csv("./data_raw/fricatives.csv")
+fricdat <- read_csv("./data_raw/fricatives.csv")
 
 #get an idea of what the data look like
-str(fric)
-glimpse(fric)
+str(fricdat)
+glimpse(fricdat)
 
 #tidy the dataset; we want to collapse the _cog and _skewness columns into single columns,
 #and create a segment column with [s] and [sh]
-tidy_fric <- fric %>%
+tidy_fric <- fricdat %>%
   gather(., meas, val, -obs) %>%
   separate(., meas, into = c("phoneme", "meas"), sep = "_", remove = T) %>%
   spread(., meas, val)

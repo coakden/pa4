@@ -1,0 +1,8 @@
+"0","tidy_fric %>%"
+"0","  ggplot(aes(phoneme, skewness))+"
+"0","  stat_summary(fun.data = mean_cl_boot)+"
+"0","  labs(title = ""Statistical Summary of Skewness, [s] and [sh]"","
+"0","       y = ""Skewness"","
+"0","       x = ""Phoneme"")"
+"2","
+"

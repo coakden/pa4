@@ -1,0 +1,6 @@
+"0","tidy_fric %>%"
+"0","  ggplot(aes(phoneme, cog))+"
+"0","    geom_boxplot() +"
+"0","    labs(title = ""Center of Gravity as a Function of Phoneme"","
+"0","         y = ""Center of Gravity (Hz)"","
+"0","         x = ""Phoneme"")       "

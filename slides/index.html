@@ -31,6 +31,10 @@ class: center, middle, inverse, title-slide
 
 --
 
+- Include code used in completing these steps
+
+--
+
 - Let's go!
 
 ---
@@ -105,7 +109,7 @@ head(tidy_fric)
 
 --
 
-- Use the `summarize()` function
+- Use the `summarize()` function (table with `knitr::kable`)
 
 --
 
@@ -114,16 +118,37 @@ head(tidy_fric)
 tidy_fric %&gt;%
   group_by(., phoneme) %&gt;%
   summarize(., mean_cog = mean(cog), sd_cog = sd(cog),
-            mean_skew = mean(skewness), sd_skew = sd(skewness))
+            mean_skew = mean(skewness), sd_skew = sd(skewness)) %&gt;%
+knitr::kable(., format = "html", digits = 2)  
 ```
 
-```
-## # A tibble: 2 x 5
-##   phoneme mean_cog   sd_cog  mean_skew   sd_skew
-##     &lt;chr&gt;    &lt;dbl&gt;    &lt;dbl&gt;      &lt;dbl&gt;     &lt;dbl&gt;
-## 1       s 5690.524 913.2537 -0.7714211 0.2834032
-## 2      sh 3994.823 697.0922  0.5527295 0.4411120
-```
+&lt;table&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; phoneme &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; mean_cog &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; sd_cog &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; mean_skew &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; sd_skew &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; s &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 5690.52 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 913.25 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; -0.77 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.28 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; sh &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3994.82 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 697.09 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.55 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.44 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
 
 ---
 #Boxplot: COG ~ Phoneme
@@ -159,14 +184,37 @@ scsmod &lt;- lm(cog ~ skewness, data = tidy_s)
 - Summarize model using `broom::tidy`
 
 ```r
-broom::tidy(scsmod)
+broom::tidy(scsmod) %&gt;%
+  knitr::kable(., format = "html", digits = 2)
 ```
 
-```
-##          term estimate std.error statistic      p.value
-## 1 (Intercept) 8027.238  212.3339  37.80479 1.328644e-18
-## 2    skewness 3029.103  259.1380  11.68915 7.690958e-10
-```
+&lt;table&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; term &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; estimate &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; std.error &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; statistic &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; p.value &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; (Intercept) &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 8027.24 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 212.33 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 37.80 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; skewness &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3029.10 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 259.14 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 11.69 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
 
 ---
 #Model Fit, cont'd
@@ -205,10 +253,6 @@ broom::tidy(scsmod)
 
 - Mean of residuals is 0 (so far so good)
 
-```r
-summary(scsmod$residuals)
-```
-
 ```
 ##     Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
 ## -1060.74   -21.72    58.96     0.00   123.00   405.24
@@ -236,7 +280,7 @@ summary(scsmod$residuals)
 
 ---
 #Writeup
-The writeup is either [here](https://coakden.github.io/pa4/writeup/) or [here](https://www.youtube.com/watch?v=oHg5SJYRHA0)
+The writeup is available [here](https://coakden.github.io/pa4/writeup/index.html)
     </textarea>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
 <script>var slideshow = remark.create({

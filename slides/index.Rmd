@@ -26,6 +26,10 @@ options(htmltools.dir.version = FALSE)
 
 --
 
+- Include code used in completing these steps
+
+--
+
 - Let's go!
 
 ---
@@ -75,7 +79,7 @@ head(tidy_fric)
 
 --
 
-- Use the `summarize()` function
+- Use the `summarize()` function (table with `knitr::kable`)
 
 --
 
@@ -83,7 +87,8 @@ head(tidy_fric)
 tidy_fric %>%
   group_by(., phoneme) %>%
   summarize(., mean_cog = mean(cog), sd_cog = sd(cog),
-            mean_skew = mean(skewness), sd_skew = sd(skewness))
+            mean_skew = mean(skewness), sd_skew = sd(skewness)) %>%
+knitr::kable(., format = "html", digits = 2)  
 ```
 
 ---
@@ -125,7 +130,8 @@ scsmod <- lm(cog ~ skewness, data = tidy_s)
 
 - Summarize model using `broom::tidy`
 ```{r, summary1}
-broom::tidy(scsmod)
+broom::tidy(scsmod) %>%
+  knitr::kable(., format = "html", digits = 2)
 ```
 
 ---
@@ -150,7 +156,7 @@ ggplot(tidy_s, aes(skewness, cog))+
 --
 
 - Mean of residuals is 0 (so far so good)
-```{r, residuals}
+```{r, residuals, echo=F}
 summary(scsmod$residuals)
 ```
 
@@ -182,4 +188,4 @@ autoplot(scsmod, which = 2)
 
 ---
 #Writeup
-The writeup is either [here](https://coakden.github.io/pa4/writeup/index.html) or [here](https://www.youtube.com/watch?v=oHg5SJYRHA0)
+The writeup is available [here](https://coakden.github.io/pa4/writeup/index.html) 

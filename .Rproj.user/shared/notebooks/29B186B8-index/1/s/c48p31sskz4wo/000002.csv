@@ -1,0 +1,18 @@
+"0","library(tidyverse)"
+"0","library(ggfortify)"
+"0","fricdat <- read_csv(""../data_raw/fricatives.csv"")"
+"2","Parsed with column specification:
+cols(
+  obs = col_integer(),
+  s_cog = col_double(),
+  s_skewness = col_double(),
+  sh_cog = col_double(),
+  sh_skewness = col_double()
+)
+"
+"0","tidy_fric <- fricdat %>%"
+"0","  gather(., meas, val, -obs) %>%"
+"0","  separate(., meas, into = c(""phoneme"", ""meas""), sep = ""_"", remove = T) %>%"
+"0","  spread(., meas, val)"
+"0","tidy_s <- tidy_fric %>%"
+"0","  filter(., phoneme == ""s"")"
